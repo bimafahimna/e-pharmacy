@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 10s #Scrape interval to every 10 seconds.
+  evaluation_interval: 10s #Evaluate rules every 10 seconds.
+  
+scrape_configs:
+  - job_name: "prometheus"
+    # metrics_path defaults to '/metrics'
+    static_configs:
+      - targets: ["prometheus:9090"]
+
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+
+  - job_name: be-service
+    static_configs:
+      - targets: ['localhost:8000']
+
+  - job_name: postgres-exporter
+    static_configs:
+      - targets : ['postgres-exporter:9187']
