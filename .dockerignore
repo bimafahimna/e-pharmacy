@@ -1,0 +1,11 @@
+README.md
+.env.example
+.gitignore
+db/
+.air.toml
+Makefile
+
+# config
+gateway/
+monitoring/
+infra/

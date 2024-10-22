@@ -1,0 +1,137 @@
+include:
+  - "docker-compose.redis.yml"
+  - "docker-compose.memcached.yml"
+
+services:
+  be:
+    container_name: backend-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    env_file: .env
+    environment:
+      - GIN_MODE = release
+      - DB_HOST=localhost
+      - REDIS_SERVER_ADDRESS=localhost:6378
+    labels:
+      logging: promtail
+      web.httpserver: app
+    network_mode: host
+    depends_on:
+      - memcached
+
+  worker:
+    container_name: worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    env_file: .env
+    environment:
+      - REDIS_SERVER_ADDRESS=localhost:6378
+    network_mode: host
+    labels:
+      logging: promtail
+      web.httpserver: worker
+    depends_on:
+      - redis
+
+  postgres-exporter:
+    container_name: postgresql-exporter
+    image: prometheuscommunity/postgres-exporter
+    ports:
+      - 9187:9187
+    environment:
+      DATA_SOURCE_NAME: "postgresql://postgres:postgres@host.docker.internal:5432/puxing_db?sslmode=disable"
+    networks:
+      - dev-net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  cadvisor:
+    container_name: cadvisor
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    platform: linux/amd64/v4
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/:/rootfs"
+      - "/var/run:/var/run"
+      - "/sys:/sys"
+      - "/var/lib/docker/:/var/lib/docker"
+      - "/dev/disk/:/dev/disk"
+    privileged: true
+    networks:
+      - dev-net
+    devices:
+      - "/dev/kmsg"
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - "./monitoring/prometheus:/etc/prometheus"
+    privileged: true
+    networks:
+      - dev-net
+    depends_on:
+      - cadvisor
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - DS_PROMETHEUS=prometheus
+    volumes:
+      - "grafana-puxing:/var/lib/grafana"
+      - "./monitoring/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml"
+      - "./monitoring/grafana/config/custom.ini:/etc/grafana/grafana.ini"
+      - "./infra:/var/lib/grafana/dashboards"
+      - "./monitoring/grafana/default.yml:/etc/grafana/provisioning/dashboards/default.yml"
+    privileged: true
+    networks:
+      - dev-net
+    depends_on:
+      - prometheus
+
+  loki:
+    container_name: loki
+    image: grafana/loki
+    ports:
+      - '3100:3100'
+    volumes:
+      - "loki-puxing:/var/lib/loki"
+      - "./monitoring/loki:/etc/loki"
+    networks:
+      - dev-net
+    command: -config.file=/etc/loki/loki-config.yml
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:latest
+    volumes:
+      - "promtail-puxing:/var/lib/promtail"
+      - "./monitoring/promtail:/etc/promtail"
+      - "/var/log:/var/log"
+      - "/var/run/docker.sock:/var/run/docker.sock" # Mount the Docker socket
+    networks:
+      - dev-net
+    depends_on:
+      - loki
+    command: -config.file=/etc/promtail/promtail-config.yml
+
+volumes:
+  grafana-puxing:
+  loki-puxing:
+  promtail-puxing:
+
+networks:
+  dev-net:
+    external: true
