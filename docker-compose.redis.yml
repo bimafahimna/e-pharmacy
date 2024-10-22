@@ -1,0 +1,17 @@
+services:
+  redis:
+    container_name: redis
+    image: redis:7.4.0-alpine
+    volumes:
+      - "redis-puxing:/var/lib/redis"
+    ports:
+      - "6378:6379"
+    networks:
+      - dev-net
+
+networks:
+  dev-net:
+    external: true
+
+volumes:
+  redis-puxing:

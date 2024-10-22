@@ -1,0 +1,17 @@
+services:
+  memcached:
+    container_name: memcached
+    image: memcached:1.6.31-alpine
+    volumes:
+      - "memcached-puxing:/var/lib/memcached"
+    ports:
+      - "11211:11211"
+    networks:
+      - dev-net
+
+networks:
+  dev-net:
+    external: true
+
+volumes:
+  memcached-puxing:

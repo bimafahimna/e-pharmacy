@@ -1,0 +1,16 @@
+*.env
+*.production
+*.local*
+
+# Visual Studio Code
+.vscode/
+
+# Air
+tmp/
+
+gateway/logs/
+
+# Vim Editor
+*.sw?
+
+# infra/
