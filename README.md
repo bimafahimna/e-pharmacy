@@ -25,9 +25,38 @@ This repository hosts a Server-Side **E-Pharmacy Web Application** designed for 
 
 ## Getting Started
 
-To get started with the E-Pharmacy Web Application, follow these steps:
+### Prerequisite:
+- golang migrate
+- make
+- docker
+- postgresql
+
+To get started with the E-Pharmacy Server, follow these steps:
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/yourusername/e-pharmacy.git
-   cd e-pharmacy
+   git clone https://github.com/bimafahimna/E-Pharmacy-ServerSide.git
+   ```
+1. **Migrate the Database**:
+   ```bash
+   make migrateup
+   ```
+1. **Seed Data**:
+   ```bash
+   make data
+   ```
+1. **Create Docker Network**:
+   ```bash
+   make network
+   ```
+1. **Create Memcache Container**:
+   ```bash
+   make cacheup
+   ```
+1. **Start the Server**:
+   ```bash
+   make server
+   ```
+
+#### Notes:
+start UI from [here](https://github.com/bimafahimna/E-Pharmacy-ClientSide) to have visualization

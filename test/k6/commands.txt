@@ -1,0 +1,16 @@
+k6 run k6_50_users_p99.js
+k6 run k6_50_users_p99_staged.js
+
+k6 run k6_100_users_p99.js
+
+k6 run k6_150_users_p99.js
+
+k6 run k6_200_users_p99.js
+
+k6 run k6_high_time_low_users.js
+
+k6 run k6_max_to_reach_p99.js
+
+k6 run k6_realism_ramp_100_users_p99.js
+
+k6 run script.js
